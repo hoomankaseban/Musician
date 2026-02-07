@@ -94,7 +94,11 @@ def scaler(scale,form):
             else:
                 # add "b" to the 2nd note.
                 desired_scale=update_scale(desired_scale,current_tuple,'b',tuples_priority_index,difference)
-    return desired_scale # Now, it's complete!!
+
+    scale_notes=[]
+    for tup in list(desired_scale.keys()):
+        scale_notes.append(tup[0])
+    return desired_scale,scale_notes # Now, it's complete!!
     
 
 
@@ -284,35 +288,30 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
             updated_scale[key]=val
     return updated_scale
 
-def display(desired_scale,scale_name,form):
+def display(desired_scale,scale_notes,scale_name,form):
     if form=='1':
         scale_form_name='Major'
     elif form=='2':
         scale_form_name='Minor'
     print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
     #printing notes of the scale...
-    scale_keys=list(desired_scale.keys())
-    scale_notes=[]
-    for tup in scale_keys:
-        scale_notes.append(tup[0])
     print(f'{scale_name} Major notes would be:\n{scale_notes}')
 
 def interface():
     scale= input('Please enter your desired note: \n')
     task= input('Please specify your desired scale: \n1-Major     2-Minor \n')
-    scale_with_distance= scaler(scale,task)
-    display(scale_with_distance,scale,task)
-    #It's great! Congratulations:)
-    #It's time to step a little further
-    #Now, I have to work on "ANY" scales
-    #for example, B#major!
-    #after this, I create other forms of scales.
-    #KEEP UP THE GOOD WORK ....
+    scale_with_distance,scale_notes= scaler(scale,task)
+    display(scale_with_distance,scale_notes,scale,task)
     
 
-#example
-# C...D...E>F...G...A...B>C
-# A...B...C+>D...E...F+...G+>A
+def chord_signaturer(scale_distances,scale_notes):
+    # D major "scale_distances":
+    # {('D', 'E'): 1, ('E', 'F#'): 1.0, ('F#', 'G'): 0.5, ('G', 'A'): 1, ('A', 'B'): 1, ('B', 'C#'): 1.0, ('C#', 'D'): 0.5}
+    # D major "scale_notes":
+    # ['D', 'E', 'F#', 'G', 'A', 'B', 'C#']
+    s=2
+
+
         
 
  
@@ -321,7 +320,9 @@ interface()
 # I have handled multiple diezes and bemols for moving notes (if it's possible!) and have a standard shape of scale.
 # but, I have to move forward!!!
 # as the next stage, I can work on adding other forms of scales (such Minor, Harmonics or Melodics and etc.).
-# I have SERIOUS probelms with "harmonic" and "melodic (should Consider DIMINISHED and AUGMENTED).
+# I have SERIOUS probelms with "harmonic" and "melodic (should Consider DIMINISHED and AUGMENTED). (for now, I skipped)
 # and in the further step, I can work on Cadences...
+# for creating cadences, first I have to calculate each scales' chords then, I can go for cadences...
+
 
 
