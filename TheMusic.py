@@ -303,19 +303,46 @@ def interface():
     scale_with_distance,scale_notes= scaler(scale,task)
     display(scale_with_distance,scale_notes,scale,task)
     
-
-def chord_signaturer(scale_distances,scale_notes):
+# With this function, I can find all chords of the scale.
+def chord_signaturer():# for now, I don't insert any factors in the function call due to tests...
+    scale_distances,scale_notes=scaler("D","1")
     # D major "scale_distances":
     # {('D', 'E'): 1, ('E', 'F#'): 1.0, ('F#', 'G'): 0.5, ('G', 'A'): 1, ('A', 'B'): 1, ('B', 'C#'): 1.0, ('C#', 'D'): 0.5}
     # D major "scale_notes":
     # ['D', 'E', 'F#', 'G', 'A', 'B', 'C#']
-    s=2
+    # create a list which contains difference of (standard thirds or fifth with real ones.)
+    # this helps to specify the type of the chord (major,minor,aug,dim).
+    thirds=[]
+    fifth=[]
+    # should put a loop over all notes from begain in sort.
+    # in each time should create an scale dict using circular loop (check end of the code.)
+    # (don't use scaler because I want prior distances) without any change.
+    # then I calculate differences of the distances and append them to the lists.
+    for base_note in scale_notes:
+        scale_form={}
+        for key in scale_distances.keys():
+            if base_note in key[0]:
+                base_tup=key
+                break
+        tup_list=list(scale_distances.keys())
+        i=tup_list.index(base_tup)
+        while True:
+            scale_form[tup_list[i]]=scale_distances[tup_list[i]]
+            i = (i+1) % len(tup_list)
+            if tup_list[i]==base_tup:
+                break
+        print(scale_form) #for test
+chord_signaturer()
+
+
+
+
 
 
         
 
  
-interface() 
+#interface() 
 # It's great! I handled multiple diezs(bemols) and diezed(bemoled) notes as scales
 # I have handled multiple diezes and bemols for moving notes (if it's possible!) and have a standard shape of scale.
 # but, I have to move forward!!!
@@ -324,5 +351,14 @@ interface()
 # and in the further step, I can work on Cadences...
 # for creating cadences, first I have to calculate each scales' chords then, I can go for cadences...
 
+# a={'a':1,'b':2,'c':3}
+# start='b'
+# li=list(a.keys())
+# i=li.index(start)
+# while True:
+#     print(a[li[i]])
+#     i=(i+1) % len(li)
 
+#     if (li[i]==start):
+#         break
 
