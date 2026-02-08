@@ -1,9 +1,9 @@
 # Programmer: Hooman Kaseban
-#Step By Step of Goals...
-#Code a program which takes a simple (in further steps, signatured scales) Scale Name and generates Suitable notes for creating Major (all scale forms) scale.
-#...takes the scale name, then generates all complete Cadances of it.
-#...takes the scale neme, then gererates all types of Cadances of it.
-#finally, I can go for mapping the scales on guitar board.
+# Step By Step of Goals...
+# Code a program which takes a simple (in further steps, signatured scales) Scale Name and generates Suitable notes for creating Major (all scale forms) scale.
+# ...takes the scale name, then generates all complete Cadances of it.
+# ...takes the scale neme, then gererates all types of Cadances of it.
+# finally, I can go for mapping the scales on guitar board.
 
 # This takes a note and desired scale form then, returns its scale in the desired form. 
 def scaler(scale,form):
@@ -337,12 +337,48 @@ def scale_harmonization():# for now, I don't insert any factors in the function 
             i = (i+1) % len(tup_list)
             if tup_list[i]==base_tup:
                 break
+    
 
     # hint!
     # use a function called "chord quality" which takes an octave
     # it returns wheather it's Major,Minor,etc.
         
 scale_harmonization()
+
+#this function should return the quality of the chord(Major,minor,augmented,and diminished)
+def chord_qiality(octave):
+    #tertian Harmony :
+    # Major = major third + perfect fifth
+    # Minor = minor third + perfect fifth
+    # Augmented = major third + augmented fifth
+    # Diminished = minor third + diminished 
+    third={2:'major',2.5:'minor'}
+    fifth={3.5:'perfect',3:'diminished',4:'augmented'}
+    counter=0
+    tone=0
+    third_form=''
+    fifth_form=''
+    for dist in octave.val():
+        tone+=dist
+        #check for 'third degree'
+        if counter==2:
+            third_form=third[tone]
+        #check for 'fifth degree'
+        if counter==4:
+            fifth_form=fifth[tone]
+            break
+        counter+=1
+    # specify the quality of the chord
+    quality={('major','perfect'):'maj',('minor','perfect'):'minor',('major','augmented'):'aug',('minor','diminished'):'dim'}
+    chord_signature=quality[(third_form,fifth_form)]     
+    return chord_signature   
+
+        
+
+
+        
+
+    
 
 
 
