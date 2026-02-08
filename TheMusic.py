@@ -100,8 +100,6 @@ def scaler(scale,form):
         scale_notes.append(tup[0])
     return desired_scale,scale_notes # Now, it's complete!!
     
-
-
 # function using in 'scaler' for applying #s and bs.
 # this function returns signatured scale based on a mentioned tuple change.
 def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,difference): 
@@ -288,40 +286,16 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
             updated_scale[key]=val
     return updated_scale
 
-def display(desired_scale,scale_notes,scale_name,form):
-    if form=='1':
-        scale_form_name='Major'
-    elif form=='2':
-        scale_form_name='Minor'
-    print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
-    #printing notes of the scale...
-    print(f'{scale_name} Major notes would be:\n{scale_notes}')
-
-def interface():
-    scale= input('Please enter your desired note: \n')
-    task= input('Please specify your desired scale: \n1-Major     2-Minor \n')
-    scale_with_distance,scale_notes= scaler(scale,task)
-    display(scale_with_distance,scale_notes,scale,task)
-    
 # With this function, I can find all chords of the scale.
-def scale_harmonization():# for now, I don't insert any factors in the function call due to tests...
-    scale_distances,scale_notes=scaler("D","1")
+def scale_harmonization(scale_distances,scale_notes):
     # D major "scale_distances":
     # {('D', 'E'): 1, ('E', 'F#'): 1.0, ('F#', 'G'): 0.5, ('G', 'A'): 1, ('A', 'B'): 1, ('B', 'C#'): 1.0, ('C#', 'D'): 0.5}
     # D major "scale_notes":
     # ['D', 'E', 'F#', 'G', 'A', 'B', 'C#']
-    # create a list which contains difference of (standard thirds or fifth with real ones.)
-    # this helps to specify the type of the chord (major,minor,aug,dim).
-    thirds=[]
-    fifth=[]
-    # should put a loop over all notes from begain in sort.
-    # in each time should create an scale dict using circular loop
-    # (don't use "scaler" because I want prior distances) without any changes.
-    # then I calculate differences of the distances and append them to the lists.
-    
-    # chord quality rule
 
-    # by a circular loop, I want to calculate third and fifth degree distances of all notes of the scale (Music Theory!)
+    # by a circular loop, I want to calculate third and fifth degree distances of all notes of the scale (tertian Harmony!)
+    # then, get the signature of the chords
+    scale_chords=[] # will contain all signatured chords of the scale
     for base_note in scale_notes:
         one_octave={} # it will contain an octave begain with the selected note. 
         #finding the starter tuple
@@ -337,14 +311,11 @@ def scale_harmonization():# for now, I don't insert any factors in the function 
             i = (i+1) % len(tup_list)
             if tup_list[i]==base_tup:
                 break
-    
-
-    # hint!
-    # use a function called "chord quality" which takes an octave
-    # it returns wheather it's Major,Minor,etc.
-        
-scale_harmonization()
-
+        signature=chord_qiality(one_octave)
+        chord=base_note+signature
+        scale_chords.append(chord)
+    return scale_chords
+      
 #this function should return the quality of the chord(Major,minor,augmented,and diminished)
 def chord_qiality(octave):
     #tertian Harmony :
@@ -352,13 +323,13 @@ def chord_qiality(octave):
     # Minor = minor third + perfect fifth
     # Augmented = major third + augmented fifth
     # Diminished = minor third + diminished 
-    third={2:'major',2.5:'minor'}
+    third={2:'major',2.5:'augmented',1.5:'minor',1:'diminished'}
     fifth={3.5:'perfect',3:'diminished',4:'augmented'}
-    counter=0
+    counter=1
     tone=0
     third_form=''
     fifth_form=''
-    for dist in octave.val():
+    for dist in octave.values():
         tone+=dist
         #check for 'third degree'
         if counter==2:
@@ -369,14 +340,33 @@ def chord_qiality(octave):
             break
         counter+=1
     # specify the quality of the chord
-    quality={('major','perfect'):'maj',('minor','perfect'):'minor',('major','augmented'):'aug',('minor','diminished'):'dim'}
+    quality={('major','perfect'):'',('minor','perfect'):'m',('major','aug'):'aug',('minor','diminished'):'dim'}
     chord_signature=quality[(third_form,fifth_form)]     
     return chord_signature   
 
         
 
+def display(desired_scale,scale_notes,scale_name,form,scale_chords):
+    if form=='1':
+        scale_form_name='Major'
+    elif form=='2':
+        scale_form_name='Minor'
+    print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
+    #printing notes of the scale...
+    print(f'{scale_name} {scale_form_name} notes would be:\n{scale_notes}')
+    print(f'scale chords would be:\n{scale_chords}')
+
+def interface():
+    scale= input('Please enter your desired note: \n')
+    task= input('Please specify your desired scale: \n1-Major     2-Minor \n')
+    scale_with_distance,scale_notes= scaler(scale,task)
+    scale_chords=scale_harmonization(scale_with_distance,scale_notes)
+    display(scale_with_distance,scale_notes,scale,task,scale_chords)
+    
+
 
         
+interface()
 
     
 
