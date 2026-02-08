@@ -304,7 +304,7 @@ def interface():
     display(scale_with_distance,scale_notes,scale,task)
     
 # With this function, I can find all chords of the scale.
-def chord_signaturer():# for now, I don't insert any factors in the function call due to tests...
+def scale_harmonization():# for now, I don't insert any factors in the function call due to tests...
     scale_distances,scale_notes=scaler("D","1")
     # D major "scale_distances":
     # {('D', 'E'): 1, ('E', 'F#'): 1.0, ('F#', 'G'): 0.5, ('G', 'A'): 1, ('A', 'B'): 1, ('B', 'C#'): 1.0, ('C#', 'D'): 0.5}
@@ -315,24 +315,34 @@ def chord_signaturer():# for now, I don't insert any factors in the function cal
     thirds=[]
     fifth=[]
     # should put a loop over all notes from begain in sort.
-    # in each time should create an scale dict using circular loop (check end of the code.)
-    # (don't use scaler because I want prior distances) without any change.
+    # in each time should create an scale dict using circular loop
+    # (don't use "scaler" because I want prior distances) without any changes.
     # then I calculate differences of the distances and append them to the lists.
+    
+    # chord quality rule
+
+    # by a circular loop, I want to calculate third and fifth degree distances of all notes of the scale (Music Theory!)
     for base_note in scale_notes:
-        scale_form={}
+        one_octave={} # it will contain an octave begain with the selected note. 
+        #finding the starter tuple
         for key in scale_distances.keys():
             if base_note in key[0]:
                 base_tup=key
                 break
+        # achieve the octave using circular loop
         tup_list=list(scale_distances.keys())
         i=tup_list.index(base_tup)
         while True:
-            scale_form[tup_list[i]]=scale_distances[tup_list[i]]
+            one_octave[tup_list[i]]=scale_distances[tup_list[i]]
             i = (i+1) % len(tup_list)
             if tup_list[i]==base_tup:
                 break
-        print(scale_form) #for test
-chord_signaturer()
+
+    # hint!
+    # use a function called "chord quality" which takes an octave
+    # it returns wheather it's Major,Minor,etc.
+        
+scale_harmonization()
 
 
 
