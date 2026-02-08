@@ -45,14 +45,12 @@ def scaler(scale,form):
 
     standard_major_distance=[1,1,0.5,1,1,1,0.5] # to create major form.
     natural_minor_distance=[1,0.5,1,1,0.5,1,1] # to create natural minor form.
-    # harmonic_minor_distance=[1,0.5,1,1,0.5,1.5,1]
-    # melodic_minor_distance=[1,0.5,1,1,1,1,0.5]
+    harmonic_minor_distance=[1,0.5,1,1,0.5,1.5,0.5]
+    melodic_minor_distance=[1,0.5,1,1,1,1,0.5]
 
     # Decide which form should be used
-    if form=='1':
-        desired_form_pattern=standard_major_distance
-    elif form=='2':
-        desired_form_pattern=natural_minor_distance
+    form_code={'1':standard_major_distance,'2':natural_minor_distance,'3':harmonic_minor_distance,'4':melodic_minor_distance}
+    desired_form_pattern=form_code[form]
     
     base_note_index=Cmaj.index(scale) 
     #Creating a draft of scale (sorted notes).
@@ -347,10 +345,8 @@ def chord_qiality(octave):
         
 
 def display(desired_scale,scale_notes,scale_name,form,scale_chords):
-    if form=='1':
-        scale_form_name='Major'
-    elif form=='2':
-        scale_form_name='Minor'
+    form_code={'1':'Major','2':'Natural Minor','3':'Harmonic Minor','4':'Melodic Minor'}
+    scale_form_name=form_code[form]
     print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
     #printing notes of the scale...
     print(f'{scale_name} {scale_form_name} notes would be:\n{scale_notes}')
@@ -358,7 +354,7 @@ def display(desired_scale,scale_notes,scale_name,form,scale_chords):
 
 def interface():
     scale= input('Please enter your desired note: \n')
-    task= input('Please specify your desired scale: \n1-Major     2-Minor \n')
+    task= input('Please specify your desired scale: \n1-Major     2-Natural Minor\n3-Harmonic Minor     4-Melodic Minor  \n')
     scale_with_distance,scale_notes= scaler(scale,task)
     scale_chords=scale_harmonization(scale_with_distance,scale_notes)
     display(scale_with_distance,scale_notes,scale,task,scale_chords)
@@ -386,15 +382,8 @@ interface()
 # I have SERIOUS probelms with "harmonic" and "melodic (should Consider DIMINISHED and AUGMENTED). (for now, I skipped)
 # and in the further step, I can work on Cadences...
 # for creating cadences, first I have to calculate each scales' chords then, I can go for cadences...
-
-# a={'a':1,'b':2,'c':3}
-# start='b'
-# li=list(a.keys())
-# i=li.index(start)
-# while True:
-#     print(a[li[i]])
-#     i=(i+1) % len(li)
-
-#     if (li[i]==start):
-#         break
-
+# I add this feature of calculating all chords of a scale!
+# now, I can go for cadences
+# however, in first, it's better I work on Harmonics and Melodics...    
+# I handeled Harmonics and Melodics in 'scaler'
+# However there is a samall bug in 'scale_harmonization'
