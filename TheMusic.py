@@ -342,7 +342,57 @@ def chord_qiality(octave):
     chord_signature=quality[(third_form,fifth_form)]     
     return chord_signature   
 
-        
+def cadences():
+    scale='G'
+    scale_form='6'
+    scale_with_distance,scale_notes= scaler(scale,scale_form)
+    scale_chords=scale_harmonization(scale_with_distance,scale_notes)
+    if scale_form=='3' or scale_form=='4':
+        scale_with_distance,scale_notes= scaler(scale,'2')
+        natural_minor_chords=scale_harmonization(scale_with_distance,scale_notes)
+    # there are 4 types of cadences: authentic, half, plagal and deceptive
+    # there are 2 types of Cadence shape: 1.pure scale 2.combination of natural, harmonic and melodic
+    # to start, I work on pure scale shape
+    # defining the shapes of each scale's authentic cadence
+    if scale_form=='1': # Natural Major:
+        cadence_shapes=[[1,2,5,1],[1,4,5,1],[1,4,2,5],[1,6,2,5],[1,6,4,5],
+                    [1,5,4,5],[1,3,4,5],[1,5,2,5],
+                    [1,4,1,5],[1,4,6,5],[1,2,1,5]]
+    elif scale_form=='2': # Natural Minor:
+        cadence_shapes=[[1,4,5,1],[1,4,7,1],[1,6,7,1],[1,6,5,1],
+                    [1,3,4,5],[1,3,6,7],[1,3,4,7],[1,3,6,5],
+                    [1,5,4,5],[1,5,4,7],[1,5,6,7],[1,7,6,5]]
+    elif scale_form=='3': # Harmonic Minor:
+        # note: 'str' numbers are the same index in natural minor!
+        cadence_shapes=[[1,4,5,1],[1,6,5,1],[1,4,7,1],[1,4,'7',7],[1,6,7,1],[1,6,'7',7],
+                    [1,4,6,5],[1,4,6,7],[1,4,7,5],[1,4,'7',7],[1,6,7,5],[1,6,'7',7],
+                    [1,3,4,5],[1,'3',4,5],[1,3,6,5],[1,'3',6,5],
+                    [1,4,1,5],[1,6,1,5],[1,4,3,5],[1,6,3,5]]
+    elif scale_form=='4': # Melodic Minor:
+        # note: 'str' numbers are the same index in natural minor!
+        cadence_shapes=[[1,4,5,1],[1,6,7,1],[1,4,2,5],[1,4,'4',5],[1,3,2,5]]
+    elif scale_form=='5' or scale_form=='6' : # Harmonic and Melodic Major:
+        cadence_shapes=[[1,4,5,1],[1,4,7,1],[1,2,5,1],[1,2,7,1],
+                    [1,4,3,5],[1,4,3,7],[1,4,2,5],[1,4,2,7],
+                    [1,6,4,5],[1,6,4,7],[1,4,1,5],[1,4,1,7],
+                    [1,4,6,5],[1,4,6,7],[1,5,4,5],[1,7,4,7],
+                    [1,3,4,5],[1,3,4,7],[1,3,2,5],[1,3,2,7]]
+
+    authentic_cadence={}
+    counter=0
+    for cycle in cadence_shapes: # a loop over all shapes of the cadence
+        counter+=1
+        cadence=[]
+        for chord_index in cycle: # a loop over all indices of the cadence shape
+            if chord_index==int(chord_index): # a trick for realising if the code has to use natural degree (use for Melodic and Harmonic scales)
+                cadence.append(scale_chords[chord_index-1]) # add the chord (based on the index) to the list
+            else: # instead of using the chord of the scale, code has to use the same index of natural minor chords (using natural chrod).
+                cadence.append(natural_minor_chords[int(chord_index)-1])
+            authentic_cadence[counter]=cadence # add the cadence shape to the all shapes of cadence dict
+    for index,cycle in authentic_cadence.items():
+        print(f'{index}. {cycle}')
+
+cadences()
 
 def display(desired_scale,scale_notes,scale_name,form,scale_chords):
     form_code={'1':'Major','2':'Natural Minor','3':'Harmonic Minor','4':'Melodic Minor','5':'Harmonic Major','6':'Melodic Major'}
@@ -362,7 +412,7 @@ def interface():
 
 
         
-interface()
+#interface()
 
     
 
@@ -389,3 +439,7 @@ interface()
 # However there is a samall bug in 'scale_harmonization'
 # bug is fixed
 # all features are availible for 'harmonic' and 'melodic' minor and major :)))))))))
+# next step is a big one! finally, I have to work on Cadences!
+# I've worked on authentic pure shape cadence for all scale forms.
+# in the next stage, I have to work on combined shape of authentic cadence
+# then, I go for all 3 other types of cadences.
