@@ -51,7 +51,6 @@ def scaler(scale,form):
     # Decide which form should be used
     form_code={'1':standard_major_distance,'2':natural_minor_distance,'3':harmonic_minor_distance,'4':melodic_minor_distance}
     desired_form_pattern=form_code[form]
-    
     base_note_index=Cmaj.index(scale) 
     #Creating a draft of scale (sorted notes).
     scale_sorted_notes=Cmaj[base_note_index:].copy()
@@ -70,8 +69,6 @@ def scaler(scale,form):
                 #create a draft of the scale distances based on the form pattern.
                 desired_scale[(current_note,next_note)]=natural_pattern[pair_note] 
                 break
-            else:
-                continue
     # Now I have a draft of scale distances based on the pattern on "desired_scale".
     # in the next step, I must adopt it...
     for tuples_priority_index in range(len(desired_form_pattern)):
@@ -92,6 +89,7 @@ def scaler(scale,form):
             else:
                 # add "b" to the 2nd note.
                 desired_scale=update_scale(desired_scale,current_tuple,'b',tuples_priority_index,difference)
+            
 
     scale_notes=[]
     for tup in list(desired_scale.keys()):
@@ -104,7 +102,7 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
     scale_keys=list(scale_dict.keys())
     next_tuple=scale_keys[tuples_priority_index+1]
     updated_scale={} #the answer
-    # process for 'b' signature
+    # process for '#' signature
     if signature=='#':
         #first, update distances...
         scale_dict[current_tuple]+=difference
@@ -195,7 +193,7 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
 
     else: # process for 'b' signature
         #first, update distances...
-        scale_dict[current_tuple]-difference
+        scale_dict[current_tuple]-=difference
         scale_dict[next_tuple]+=difference #due to multiplying the number in signature sings (char type), I have to use integer.
         # this loop works on signature signs and applying them.
         difference=int(difference/0.5)
@@ -338,7 +336,7 @@ def chord_qiality(octave):
             break
         counter+=1
     # specify the quality of the chord
-    quality={('major','perfect'):'',('minor','perfect'):'m',('major','aug'):'aug',('minor','diminished'):'dim'}
+    quality={('major','perfect'):'',('minor','perfect'):'m',('major','augmented'):'_aug',('minor','diminished'):'_dim'}
     chord_signature=quality[(third_form,fifth_form)]     
     return chord_signature   
 
@@ -387,3 +385,5 @@ interface()
 # however, in first, it's better I work on Harmonics and Melodics...    
 # I handeled Harmonics and Melodics in 'scaler'
 # However there is a samall bug in 'scale_harmonization'
+# bug is fixed
+# all features are availible for 'harmonic' and 'melodic' minor :)))))))))
