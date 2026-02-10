@@ -377,6 +377,15 @@ def cadences():
                     [1,6,4,5],[1,6,4,7],[1,4,1,5],[1,4,1,7],
                     [1,4,6,5],[1,4,6,7],[1,5,4,5],[1,7,4,7],
                     [1,3,4,5],[1,3,4,7],[1,3,2,5],[1,3,2,7]]
+    elif scale_form=='7': # Plagal
+        cadence_shapes=[[1,5,1,4,1]]
+    elif scale_form=='8': # Half
+        cadence_shapes=[[1,4,5,5]]
+    elif scale_form=='9': # deceptive
+        cadence_shapes=[[1,4,5,4],[1,4,5,1]]
+    elif scale_form=='10': # Picardi-third
+        cadence_shapes=[[1,4,5,1]] # should working on it
+
 
     authentic_cadence={}
     counter=0
