@@ -4,7 +4,7 @@
 # ...takes the scale name, then generates all complete Cadances of it.
 # ...takes the scale neme, then gererates all types of Cadances of it.
 # finally, I can go for mapping the scales on guitar board.
-
+import regex as re
 # This takes a note and desired scale form then, returns its scale in the desired form. 
 def scaler(scale,form):
     Cmaj=["C","D","E","F","G","A",'B'] # Cmajor chord notes (using in giving priorities).
@@ -342,6 +342,20 @@ def chord_qiality(octave):
     chord_signature=quality[(third_form,fifth_form)]     
     return chord_signature   
 
+#this function takes a chord and a form, then simply return the chord in that form
+# example: chord_converter('C#_dim','minor')>>> 'C#m' .
+def chord_converter(chord,desired_form):
+    base_chord=str(re.findall('[A-Z]{1}[#,b]*',chord)[0])
+    if desired_form=='major':
+        new_chord=base_chord
+    elif desired_form=='minor':
+        new_chord=base_chord+'m'
+    elif desired_form=='diminished':
+        new_chord=base_chord+'_dim'
+    elif desired_form=='augmented':
+        new_chord=base_chord+'_aug'
+    return new_chord
+
 def cadences():
     scale='G'
     scale_form='6'
@@ -400,8 +414,9 @@ def cadences():
             authentic_cadence[counter]=cadence # add the cadence shape to the all shapes of cadence dict
     for index,cycle in authentic_cadence.items():
         print(f'{index}. {cycle}')
-
-cadences()
+# I plan to make a dictionary for cadences instead of just simple lists because I want names!
+# Then, I want to manage 'combined' cadences
+#cadences()
 
 def display(desired_scale,scale_notes,scale_name,form,scale_chords):
     form_code={'1':'Major','2':'Natural Minor','3':'Harmonic Minor','4':'Melodic Minor','5':'Harmonic Major','6':'Melodic Major'}
@@ -419,8 +434,6 @@ def interface():
     display(scale_with_distance,scale_notes,scale,task,scale_chords)
     
 
-
-        
 #interface()
 
     
