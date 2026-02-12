@@ -342,17 +342,49 @@ def chord_qiality(octave):
     chord_signature=quality[(third_form,fifth_form)]     
     return chord_signature   
 
-#this function takes a chord and a form, then simply return the chord in that form
-# example: chord_converter('C#_dim','minor')>>> 'C#m' .
-def chord_converter(chord,desired_form):
-    base_chord=str(re.findall('[A-Z]{1}[#,b]*',chord)[0])
-    if desired_form=='major':
+#this function takes a chord, a form and signature ("optional" and could be null), then simply return the chord in that form
+# example: chord_converter('C#_dim','A','b')>>> 'C_aug' .
+def chord_converter(chord,desired_form,signature):
+    notes_sort=['C','D','E','F','G','A','B']
+    base_chord_draft=str(re.findall('[A-Z]{1}[#,b]*',chord)[0])
+    # handling sugnatures
+    if signature=='': # if there is no signatures to apply on chord
+        base_chord=base_chord_draft
+    else: # if there is signatures to apply on chord
+        if len(base_chord_draft)>1: #signatured chord
+            if base_chord_draft[1]=='#': # if chord original signature is '#'
+                if signature=='#': # 'double sharp; "##" >> move one note higher
+                    l=len(notes_sort)
+                    i=notes_sort.index(base_chord_draft[0])
+                    base_chord=notes_sort[(i+1)%l]
+                elif signature=='b':# sharp bemol; "#b" >> move back to base
+                    base_chord=base_chord_draft[0]                
+            else: # if chord original signature is 'b'
+                if signature=='b': # 'double bemols; "bb" >> move one note lower
+                    l=len(notes_sort)
+                    i=notes_sort.index(base_chord_draft[0])
+                    base_chord=notes_sort[(i-1)%l]
+                if signature=='#':  # bemol sharp; "b#" >> move on to base
+                    base_chord=base_chord_draft[0]
+        else: #simple chord
+            if signature=='b':
+                if base_chord_draft=='F':
+                    base_chord='E'
+                else:
+                    base_chord= base_chord_draft+signature
+            elif signature=='#':
+                if base_chord_draft=='E':
+                    base_chord='F'
+                else:
+                    base_chord= base_chord_draft+signature
+
+    if desired_form=='': #for Major
         new_chord=base_chord
-    elif desired_form=='minor':
+    elif desired_form=='M':#for Minor
         new_chord=base_chord+'m'
-    elif desired_form=='diminished':
+    elif desired_form=='D':# for Diminished
         new_chord=base_chord+'_dim'
-    elif desired_form=='augmented':
+    elif desired_form=='A': #for Augmented
         new_chord=base_chord+'_aug'
     return new_chord
 
@@ -368,52 +400,84 @@ def cadences():
     # there are 2 types of Cadence shape: 1.pure scale 2.combination of natural, harmonic and melodic
     # to start, I work on pure scale shape
     # defining the shapes of each scale's authentic cadence
+    cadence_pattern={}
     if scale_form=='1': # Natural Major:
-        cadence_shapes=[[1,2,5,1],[1,4,5,1],[1,4,2,5],[1,6,2,5],[1,6,4,5],
+        cadence_pattern['Authentic Cadence (Natural Major)']=[[1,2,5,1],[1,4,5,1],[1,4,2,5],[1,6,2,5],[1,6,4,5],
                     [1,5,4,5],[1,3,4,5],[1,5,2,5],
                     [1,4,1,5],[1,4,6,5],[1,2,1,5]]
     elif scale_form=='2': # Natural Minor:
-        cadence_shapes=[[1,4,5,1],[1,4,7,1],[1,6,7,1],[1,6,5,1],
+        cadence_pattern['Authentic Cadence (Natural Minor)']=[[1,4,5,1],[1,4,7,1],[1,6,7,1],[1,6,5,1],
                     [1,3,4,5],[1,3,6,7],[1,3,4,7],[1,3,6,5],
                     [1,5,4,5],[1,5,4,7],[1,5,6,7],[1,7,6,5]]
     elif scale_form=='3': # Harmonic Minor:
         # note: 'str' numbers are the same index in natural minor!
-        cadence_shapes=[[1,4,5,1],[1,6,5,1],[1,4,7,1],[1,4,'7',7],[1,6,7,1],[1,6,'7',7],
-                    [1,4,6,5],[1,4,6,7],[1,4,7,5],[1,4,'7',7],[1,6,7,5],[1,6,'7',7],
-                    [1,3,4,5],[1,'3',4,5],[1,3,6,5],[1,'3',6,5],
+        cadence_pattern['Authentic Cadence (Harmonic Minor)']=[[1,4,5,1],[1,6,5,1],[1,4,7,1],[1,4,'7NM',7],[1,6,7,1],[1,6,'7NM',7],
+                    [1,4,6,5],[1,4,6,7],[1,4,7,5],[1,4,'7NM',7],[1,6,7,5],[1,6,'7NM',7],
+                    [1,3,4,5],[1,'3NM',4,5],[1,3,6,5],[1,'3NM',6,5],
                     [1,4,1,5],[1,6,1,5],[1,4,3,5],[1,6,3,5]]
     elif scale_form=='4': # Melodic Minor:
         # note: 'str' numbers are the same index in natural minor!
-        cadence_shapes=[[1,4,5,1],[1,6,7,1],[1,4,2,5],[1,4,'4',5],[1,3,2,5]]
+        cadence_pattern['Authentic Cadence Melodic Minor']=[[1,4,5,1],[1,6,7,1],[1,4,2,5],[1,4,'4NM',5],[1,3,2,5]]
     elif scale_form=='5' or scale_form=='6' : # Harmonic and Melodic Major:
-        cadence_shapes=[[1,4,5,1],[1,4,7,1],[1,2,5,1],[1,2,7,1],
+        if scale_form=='5':
+            s='Authentic Cadence (Harmonic Major)'
+        else:
+            s='Authentic Cadence (Melodic Major)'
+        cadence_pattern[s]=[[1,4,5,1],[1,4,7,1],[1,2,5,1],[1,2,7,1],
                     [1,4,3,5],[1,4,3,7],[1,4,2,5],[1,4,2,7],
                     [1,6,4,5],[1,6,4,7],[1,4,1,5],[1,4,1,7],
                     [1,4,6,5],[1,4,6,7],[1,5,4,5],[1,7,4,7],
                     [1,3,4,5],[1,3,4,7],[1,3,2,5],[1,3,2,7]]
-    elif scale_form=='7': # Plagal
-        cadence_shapes=[[1,5,1,4,1]]
-    elif scale_form=='8': # Half
-        cadence_shapes=[[1,4,5,5]]
-    elif scale_form=='9': # deceptive
-        cadence_shapes=[[1,4,5,4],[1,4,5,1]]
-    elif scale_form=='10': # Picardi-third
-        cadence_shapes=[[1,4,5,1]] # should working on it
+    # add pure shape of other types of Cadence (in further, work on combined forms)
+    cadence_pattern['Simple Plagal Cadence']=[[1,5,1,4,1]]
+    cadence_pattern['Simple Half Cadence']=[[1,4,5,5]]
+    cadence_pattern['Simple Deceptive Cadence']=[[1,4,5,4],[1,4,5,1]]
+     # Now it's turn to work on other types of Cadence (using Combined forms)
+    if scale_form=='1' or '5' or '6':
+        cadence_pattern['Combined Major Authentic Cadence']=[]
+        cadence_pattern['Combined Major Plagal Cadence']=[]
+        cadence_pattern['Combined Major Half Cadence']=[]
+        cadence_pattern['Combined Major Deceptive Cadence']=[]
+    elif scale_form=='2' or '3' or '4':
+        cadence_pattern['Picardi-Third Cadence']=[[1,4,5,1]]
+        cadence_pattern['Combined Minor Authentic Cadence']=[]
+        cadence_pattern['Combined Minor Plagal Cadence']=[]
+        cadence_pattern['Combined Minor Half Cadence']=[]
+        cadence_pattern['Combined Minor Deceptive Cadence']=[]
+
+    cadences={} #a dict which stores all cadences by chords
+    for cadence_name, all_patterns in cadence_pattern.items(): # a loop over all types of cadence
+        cadence_shapes={} # a temporary dict which stores all patterns of a cadence by chords specified by numbers
+        counter=0
+        for pattern in all_patterns: # a loop over all patterns of the cadence
+            counter+=1
+            cadence_cycle=[]
+            for chord_index in pattern: # a loop over all notes of the cadence's pattern
+                if chord_index==int(chord_index): # if the chord is availibe on the scale
+                    cadence_cycle.append(scale_chords[chord_index-1]) # add the chord (based on the index) to the list
+                else: # if the chord is not availible on the scale and should use the same degree on other forms or scales.
+                    if 'NM' in chord_index: #should use "natural Minor" form? (use in Melodic and harmonic authentic cadence)
+                        cadence_cycle.append(natural_minor_chords[int(chord_index)-1])
+                    else: # should use chord_converter? (use in combined cadences)
+                        base_chord_index=int(chord_index[0]) # exg; if chord_index=='7#A'>>>'7' 
+                        base_chord=scale_chords[chord_index-1]
+                        #should use chord_converter!
+                        #create split (chord,form,signature) by regeX!
+                        #...
 
 
-    authentic_cadence={}
-    counter=0
-    for cycle in cadence_shapes: # a loop over all shapes of the cadence
-        counter+=1
-        cadence=[]
-        for chord_index in cycle: # a loop over all indices of the cadence shape
-            if chord_index==int(chord_index): # a trick for realising if the code has to use natural degree (use for Melodic and Harmonic scales)
-                cadence.append(scale_chords[chord_index-1]) # add the chord (based on the index) to the list
-            else: # instead of using the chord of the scale, code has to use the same index of natural minor chords (using natural chrod).
-                cadence.append(natural_minor_chords[int(chord_index)-1])
-            authentic_cadence[counter]=cadence # add the cadence shape to the all shapes of cadence dict
-    for index,cycle in authentic_cadence.items():
-        print(f'{index}. {cycle}')
+
+        cadence_shapes[counter]=cadence_cycle # the cadence shape No.(counter)
+    cadences[cadence_name]=cadence_shapes  # add all paterns of the cadence to the answer dict
+
+
+
+
+
+
+
+    
+
 # I plan to make a dictionary for cadences instead of just simple lists because I want names!
 # Then, I want to manage 'combined' cadences
 #cadences()
@@ -435,13 +499,10 @@ def interface():
     
 
 #interface()
-
+x='7bA'
+s=str(re.findall('[b]*|[#]*',x)[0])
     
-
-
-
-
-
+print(s)
 
         
 
