@@ -203,7 +203,6 @@ def chord_quality(octave):
 # example: chord_converter('C#_dim','A','b')>>> 'C_aug' .
 # example: chord_converter('C#_dim','','b')>>> 'C_dim' .
 def chord_converter(chord,desired_form,signature):
-    notes_sort=['C','D','E','F','G','A','B']
     if desired_form!='': # if desired form is requested
         base_chord_draft=str(re.findall('[A-Z]{1}[#,b]*',chord)[0])
         if desired_form=='M': #for Major
@@ -331,7 +330,7 @@ def cadences(scale,scale_form):
 
 
 
-def display(desired_scale,scale_notes,scale_name,form,scale_chords,cadence):
+def theoretical_display(desired_scale,scale_notes,scale_name,form,scale_chords,cadence):
     form_code={'1':'Major','2':'Natural Minor','3':'Harmonic Minor','4':'Melodic Minor','5':'Harmonic Major','6':'Melodic Major'}
     scale_form_name=form_code[form]
     print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
@@ -345,16 +344,84 @@ def display(desired_scale,scale_notes,scale_name,form,scale_chords,cadence):
             print(f'{number} : {cadence_form}')
 
 
+def enharmonics_simplifier(desired_scale,scale_notes,scale_chords,cadence_form):
+    # "desired_scale" is a dict of tuple:number
+    # "scale_notes" is a list of strings
+    # "scale_chords" is a list of strings
+    # "cadence_form" is a list of strings
+    sharp_notation=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
+    flat_notation=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
+    notation=[]
+    pattern=re.compile(r'([A-Z]{1})([b*#*]*)') # pattern for extracting pure note and signatures
+    #simplify 'scale_notes'
+    simplified_scale_note=[]
+    for note in scale_notes:
+        if signatures: #if it's not a simple note
+            pure_note,signatures=list(pattern.match(note).groups())
+            if "#" in signatures:
+                notation=sharp_notation
+            else: # there are 'b's
+                notation=flat_notation
+            leveler=notation.index(pure_note) + len(signatures)
+            simplified_note=notation[leveler % len(notation)]
+            note=simplified_note
+        simplified_scale_note.append(note)
+    #simplify 'scale_chords'
+    simplified_scale_chords=[]
+    for chord in scale_chords:
+        if signatures: #if it's not a simple note
+            pure_note,signatures=list(pattern.match(chord).groups())
+            if "#" in signatures:
+                notation=sharp_notation
+            else: # there are 'b's
+                notation=flat_notation
+            leveler=notation.index(pure_note) + len(signatures)
+            simplified_chord=notation[leveler % len(notation)]
+            chord=simplified_chord
+        simplified_scale_chords.append(chord)
+    #simplify 'cadence_form'
+    simplified_cadence_form=[]
+    for chord in cadence_form:
+        if signatures: #if it's not a simple note
+            pure_note,signatures=list(pattern.match(chord).groups())
+            if "#" in signatures:
+                notation=sharp_notation
+            else: # there are 'b's
+                notation=flat_notation
+            leveler=notation.index(pure_note) + len(signatures)
+            simplified_chord=notation[leveler % len(notation)]
+            chord=simplified_chord
+        simplified_cadence_form.append(chord)
+    # simplify desired_scale
+    
+
+
+
+def practical_display(desired_scale,scale_notes,scale_name,form,scale_chords,cadence):
+    form_code={'1':'Major','2':'Natural Minor','3':'Harmonic Minor','4':'Melodic Minor','5':'Harmonic Major','6':'Melodic Major'}
+    scale_form_name=form_code[form]
+    print(f'"{scale_name}" {scale_form_name} with distances is:\n {desired_scale}')
+    #printing notes of the scale...
+    print(f'{scale_name} {scale_form_name} notes would be:\n{scale_notes}')
+    print(f'scale chords would be:\n{scale_chords}')
+    #printing all types of cadence for the scale
+    for name,pattern in cadence.items():
+        print(f'{name} for {scale_name} {scale_form_name} :')
+        for number,cadence_form in pattern.items():
+            print(f'{number} : {cadence_form}')
+
 def interface():
     scale= input('Please enter your desired note: \n')
     task= input('Please specify your desired scale: \n1-Major     2-Natural Minor\n3-Harmonic Minor     4-Melodic Minor  \n5-Harmonic Major     6-Melodic Major  \n')
     scale_with_distance,scale_notes= scaler(scale,task)
     scale_chords=scale_harmonization(scale_with_distance,scale_notes)
     cadence=cadences(scale,task)
-    display(scale_with_distance,scale_notes,scale,task,scale_chords,cadence)
+    #display(scale_with_distance,scale_notes,scale,task,scale_chords,cadence)
     
 
-interface()
+#interface()
+
+
 #optimize the code and refactor it.
 #for combined cadences, let's check the correctency of the knowledge.
 #using Figma, I have to create a draft of UI section.
@@ -364,5 +431,7 @@ interface()
 
 
 
-#all functions are good and theory based.
-# now, have to test scale notes for final.
+#cadence: list of chords
+#chords: list of chords
+#notess: list of notes
+# distances: dict of tuple:number
