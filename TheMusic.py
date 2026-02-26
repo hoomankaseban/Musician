@@ -112,136 +112,47 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
     
     sharp_notation=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
     flat_notation=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
-    flat_notation=flat_notation.reverse()
-    if signature=='#':
-        
-        if signature=='#': #Update difference due to its signature
-            difference=difference
-            notation=sharp_notation
-        else:
-            difference=(-1)*difference
-            notation=flat_notation
-        #first, update distances (signatures are considered)
-        scale_dict[current_tuple]+=difference
-        scale_dict[next_tuple]-=difference
-        # second, add 'signature' to the note
-        difference=int(abs(difference)/0.5) #due to multiplying the number in signature sings (char type), I have to use integer.
-        
-        # this loop works on signature signs and applying them.
-        for key,val in scale_dict.items(): 
-            # only current tuple and the next would be updated by signatures
-            # reminder: the note with signature is placed in 2nd and 1st of the current tuple and the next tuple respectively.
-            if key==current_tuple: # check if it's turn to apply signature on the current tuple. (to update 'key')
-                # transform to 'list' type for making changes.
-                key=list(key) 
-                # allow to insert multiple '#' if it needs! example: D#major
-                key[1]=key[1]+signature*difference 
+    flat_notation.reverse()
 
+    if signature=='#': #Update difference due to its signature
+        difference=difference
+        notation=sharp_notation
+    else:
+        difference=(-1)*difference
+        notation=flat_notation
+    #first, update distances (signatures are considered)
+    scale_dict[current_tuple]+=difference
+    scale_dict[next_tuple]-=difference
+    # second, add 'signature' to the note
+    difference=int(abs(difference)/0.5) #due to multiplying the number in signature sings (char type), I have to use integer.
+    
+    # this loop works on signature signs and applying them.
+    for key,val in scale_dict.items(): 
+        # only current tuple and the next would be updated by signatures
+        # reminder: the note with signature is placed in 2nd and 1st of the current tuple and the next tuple respectively.
+        if key==current_tuple: # check if it's turn to apply signature on the current tuple. (to update 'key')
+            # transform to 'list' type for making changes.
+            key=list(key) 
+            # allow to insert multiple 'signature' if it needs! example: D#major
+            key[1]=key[1]+signature*difference 
+            full_note=key[1]
+            signatures=full_note[1:] #in G##, further_signatures would be '##'
+            pure_note=full_note[0] #in G##, note_withonesign would be 'G'
+            # Now, should find the applied note
+            leveler=len(signatures) + notation.index(pure_note)
+            updated_note= notation[leveler]
+            # replacing in list
+            key[1]=updated_note
+            signatured_key=key[1] #storing the final shape of note for applying in the next tuple
+            key=tuple(key)#transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
+        elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
+            # just have to replace the shape of the note which it's calculated on the previous round.
+            key=list(key)
+            key[0]=signatured_key
+            key=tuple(key)
+        # at the end, fill the answer dict.
+        updated_scale[key]=val 
 
-
-
-
-                # I'm HERE!
-
-                full_note=key[1]
-                further_signatures=full_note[2:] #in G##, further_signatures would be '#'
-                note_withonesign=full_note[:2] #in G##, note_withonesign would be 'G#'
-                #then, I have to search for note_withonesign in Notation, 
-                #then, based on the length of further_signatures, I go further in Notation
-
-
-                # in this stage, I wanna handle 'double diezes(##)' or 'multiple ones'
-                if (len(key[1])==2) and (key[1][0]=='E' or key[1][0]=='B'): #check for B# and E#
-                        if key[1][0]=='B':
-                            key[1]='C'
-                        else:
-                            key[1]='F'
-                # check for notes with "more" than 2 signatures. example: G##
-                if len(key[1])>2:
-                    Cmaj=['C','D','E','F','G','A','B']
-                    
-                    pure_note=complex_note[0]
-                    pure_note_index=Cmaj.index(pure_note)
-                    
-                    # for 'E' and 'B', by one #, the note goes 1 level up.
-                    if pure_note=='E' or pure_note=='B':
-                        signatures=signatures[:-1] #removing last signature. 
-                        # replace by the higher note.
-                        if pure_note=='B':
-                            pure_note='C'
-                        else:
-                            pure_note='F'
-                    else: # for other notes, by two #, the note goes 1 level up.
-                        #removing two last signatures.
-                        signatures=signatures[:-2] 
-                        # replace by the higher note.
-                        pure_note=Cmaj[pure_note_index+1]
-                    #replace new shape of note. (optimized shape)
-                    key[1]=pure_note+signatures
-                #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
-                signatured_key=key[1] #storing the final shape of note for applying in the next tuple
-                key=tuple(key)
-            elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
-                # just have to replace the shape of the note which it's calculated on the previous round.
-                key=list(key)
-                key[0]=signatured_key
-                key=tuple(key)
-            # at the end, fill the answer dict.
-            updated_scale[key]=val 
-
-    else: # process for 'b' signature
-        #first, update distances...
-        scale_dict[current_tuple]-=difference
-        scale_dict[next_tuple]+=difference #due to multiplying the number in signature sings (char type), I have to use integer.
-        # this loop works on signature signs and applying them.
-        difference=int(difference/0.5)
-        for key,val in scale_dict.items():
-            # only current tuple and the next would be updated by signatures
-            # reminder: the note with signature is placed in 2nd and 1st of the current tuple and the next tuple respectively.
-            if key==current_tuple: # check if it's turn to apply signature on the current tuple. (to update 'key')
-                # transform to 'list' type for making changes.
-                key=list(key)
-                # allow to insert multiple 'b' if it needs! example: Dbmajor
-                key[1]=key[1]+'b'*difference
-                # in this stage, I wanna handle 'double bemols(bb)' or 'multiple ones'
-                if len(key[1])==2: #check for Cb and Fb
-                        if key[1][0]=='C':
-                            key[1]='B'
-                        if key[1][0]=='F':
-                            key[1]='E'
-                # check for notes with "more" than 2 signatures. example: Gbb
-                if len(key[1])>2:
-                    Cmaj=['C','D','E','F','G','A','B']
-                    complex_note=key[1]
-                    pure_note=complex_note[0]
-                    pure_note_index=Cmaj.index(pure_note)
-                    signatures=complex_note[1:]
-                    # for 'F' and 'C', by one b, the note goes 1 level down.
-                    if pure_note=='F' or pure_note=='C':
-                        #removing last signature. 
-                        signatures=signatures[:-1] 
-                        # replace by the lower note.
-                        if pure_note=='C':
-                            pure_note='B'
-                        else:
-                            pure_note='E'
-                    else:
-                        #removing two last signatures.
-                        signatures=signatures[:-2]
-                        # replace by the lower note.
-                        pure_note=Cmaj[pure_note_index-1]
-                    #replace new shape of note. (optimized shape)
-                    key[1]=pure_note+signatures
-                signatured_key=key[1]
-                #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
-                key=tuple(key)
-            elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
-                # just have to replace the shape of the note which it's calculated on the previous round.
-                key=list(key)
-                key[0]=signatured_key
-                key=tuple(key)
-            # at the end, fill the answer dict.
-            updated_scale[key]=val
     return updated_scale
 
 # With this function, I can find all chords of the scale.
@@ -472,7 +383,6 @@ def interface():
     
 
 interface()
-
 #optimize the code and refactor it.
 #for combined cadences, let's check the correctency of the knowledge.
 #using Figma, I have to create a draft of UI section.
