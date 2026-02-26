@@ -12,7 +12,7 @@ def scaler(scale,form):
     #scale form:
     #'1':natural_major,'2':natural_minor_distance,'3':harmonic_minor_distance,
     #'4':melodic_minor,'5':harmonic_major_distance,'6':melodic_major_distance
-    Cmaj=["C","D","E","F","G","A",'B'] # Cmajor chord notes (using in making priorities).
+    Cmaj=["C","D","E","F","G","A","B"] # Cmajor chord notes (using in making priorities).
     # Cmajor distances (natural distance between notes), crucial for finding distances in any scale.
     natural_pattern_prior={('C','D'):1 , ('D','E'):1 , ('E','F'):0.5 , ('F','G'):1 , ('G','A'):1 , ('A','B'):1 , ('B','C'):0.5 }
     # this dict will include the scale distances.
@@ -109,13 +109,24 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
     next_tuple=scale_keys[tuples_priority_index+1]
     signatured_key='' #use for updating next tuple note
     updated_scale={} #the answer
-    # process for '#' signature
+    
+    sharp_notation=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
+    flat_notation=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
+    flat_notation=flat_notation.reverse()
     if signature=='#':
-        #first, update distances...
+        
+        if signature=='#': #Update difference due to its signature
+            difference=difference
+            notation=sharp_notation
+        else:
+            difference=(-1)*difference
+            notation=flat_notation
+        #first, update distances (signatures are considered)
         scale_dict[current_tuple]+=difference
         scale_dict[next_tuple]-=difference
-        # second, add '#' to the note
-        difference=int(difference/0.5) #due to multiplying the number in signature sings (char type), I have to use integer.
+        # second, add 'signature' to the note
+        difference=int(abs(difference)/0.5) #due to multiplying the number in signature sings (char type), I have to use integer.
+        
         # this loop works on signature signs and applying them.
         for key,val in scale_dict.items(): 
             # only current tuple and the next would be updated by signatures
@@ -124,7 +135,21 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                 # transform to 'list' type for making changes.
                 key=list(key) 
                 # allow to insert multiple '#' if it needs! example: D#major
-                key[1]=key[1]+'#'*difference 
+                key[1]=key[1]+signature*difference 
+
+
+
+
+
+                # I'm HERE!
+
+                full_note=key[1]
+                further_signatures=full_note[2:] #in G##, further_signatures would be '#'
+                note_withonesign=full_note[:2] #in G##, note_withonesign would be 'G#'
+                #then, I have to search for note_withonesign in Notation, 
+                #then, based on the length of further_signatures, I go further in Notation
+
+
                 # in this stage, I wanna handle 'double diezes(##)' or 'multiple ones'
                 if (len(key[1])==2) and (key[1][0]=='E' or key[1][0]=='B'): #check for B# and E#
                         if key[1][0]=='B':
@@ -134,10 +159,10 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                 # check for notes with "more" than 2 signatures. example: G##
                 if len(key[1])>2:
                     Cmaj=['C','D','E','F','G','A','B']
-                    complex_note=key[1]
+                    
                     pure_note=complex_note[0]
                     pure_note_index=Cmaj.index(pure_note)
-                    signatures=complex_note[1:]
+                    
                     # for 'E' and 'B', by one #, the note goes 1 level up.
                     if pure_note=='E' or pure_note=='B':
                         signatures=signatures[:-1] #removing last signature. 
