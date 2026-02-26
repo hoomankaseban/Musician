@@ -109,17 +109,11 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
     next_tuple=scale_keys[tuples_priority_index+1]
     signatured_key='' #use for updating next tuple note
     updated_scale={} #the answer
-    
-    sharp_notation=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
-    flat_notation=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
-    flat_notation.reverse()
 
     if signature=='#': #Update difference due to its signature
         difference=difference
-        notation=sharp_notation
     else:
         difference=(-1)*difference
-        notation=flat_notation
     #first, update distances (signatures are considered)
     scale_dict[current_tuple]+=difference
     scale_dict[next_tuple]-=difference
@@ -135,15 +129,7 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
             key=list(key) 
             # allow to insert multiple 'signature' if it needs! example: D#major
             key[1]=key[1]+signature*difference 
-            full_note=key[1]
-            signatures=full_note[1:] #in G##, further_signatures would be '##'
-            pure_note=full_note[0] #in G##, note_withonesign would be 'G'
-            # Now, should find the applied note
-            leveler=len(signatures) + notation.index(pure_note)
-            updated_note= notation[leveler]
-            # replacing in list
-            key[1]=updated_note
-            signatured_key=key[1] #storing the final shape of note for applying in the next tuple
+            signatured_key=key[1]
             key=tuple(key)#transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
         elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
             # just have to replace the shape of the note which it's calculated on the previous round.
@@ -237,31 +223,17 @@ def chord_converter(chord,desired_form,signature):
     else: # if there is signatures to apply on chord
         if len(base_chord_draft)>1: #signatured chord
             if base_chord_draft[1]=='#': # if chord original signature is '#'
-                if signature=='#': # 'double sharp; "##" >> move one note higher
-                    l=len(notes_sort)
-                    i=notes_sort.index(base_chord_draft[0])
-                    base_chord=notes_sort[(i+1)%l]
-                elif signature=='b':# sharp bemol; "#b" >> move back to base
-                    base_chord=base_chord_draft[0]                
+                if signature=='b':# sharp bemol; "#b" >> move back to base
+                    base_chord=base_chord_draft[:(len(base_chord_draft)-1)]    
+                else:
+                    base_chord= base_chord_draft+signature            
             else: # if chord original signature is 'b'
-                if signature=='b': # 'double bemols; "bb" >> move one note lower
-                    l=len(notes_sort)
-                    i=notes_sort.index(base_chord_draft[0])
-                    base_chord=notes_sort[(i-1)%l]
                 if signature=='#':  # bemol sharp; "b#" >> move on to base
-                    base_chord=base_chord_draft[0]
+                    base_chord=base_chord_draft[:(len(base_chord_draft)-1)]
+                else:
+                    base_chord= base_chord_draft+signature
         else: #simple chord
-            if signature=='b':
-                if base_chord_draft=='F':
-                    base_chord='E'
-                else:
-                    base_chord= base_chord_draft+signature
-            elif signature=='#':
-                if base_chord_draft=='E':
-                    base_chord='F'
-                else:
-                    base_chord= base_chord_draft+signature
-
+            base_chord= base_chord_draft+signature
     new_chord=base_chord+form
     return new_chord
 
@@ -390,3 +362,7 @@ interface()
 #There's a lot of exciting sections...
 #Hope to reach prefectly all of them.
 
+
+
+#all functions are good and theory based.
+# now, have to test scale notes for final.
