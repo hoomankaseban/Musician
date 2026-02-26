@@ -5,9 +5,14 @@
 # ...takes the scale neme, then gererates all types of Cadances of it.passed!
 # finally, I can go for mapping the scales on guitar board.
 import regex as re
-# This takes a note and desired scale form then, returns its scale in the desired form. 
+# This function takes a note and desired scale form then, returns its scale in the desired form. 
 def scaler(scale,form):
-    Cmaj=["C","D","E","F","G","A",'B'] # Cmajor chord notes (using in giving priorities).
+    #scale:
+    # 'C','C#','D',...
+    #scale form:
+    #'1':natural_major,'2':natural_minor_distance,'3':harmonic_minor_distance,
+    #'4':melodic_minor,'5':harmonic_major_distance,'6':melodic_major_distance
+    Cmaj=["C","D","E","F","G","A",'B'] # Cmajor chord notes (using in making priorities).
     # Cmajor distances (natural distance between notes), crucial for finding distances in any scale.
     natural_pattern_prior={('C','D'):1 , ('D','E'):1 , ('E','F'):0.5 , ('F','G'):1 , ('G','A'):1 , ('A','B'):1 , ('B','C'):0.5 }
     # this dict will include the scale distances.
@@ -42,23 +47,23 @@ def scaler(scale,form):
                 natural_pattern[key]=val
     else: #simple scale (without signatures)
         natural_pattern=natural_pattern_prior
-
-    standard_major_distance=[1,1,0.5,1,1,1,0.5] # to create major form.
-    natural_minor_distance=[1,0.5,1,1,0.5,1,1] # to create natural minor form.
+    # specify patterns' form
+    natural_major_distance=[1,1,0.5,1,1,1,0.5] 
+    natural_minor_distance=[1,0.5,1,1,0.5,1,1] 
     harmonic_minor_distance=[1,0.5,1,1,0.5,1.5,0.5]
     melodic_minor_distance=[1,0.5,1,1,1,1,0.5]
     harmonic_major_distance=[1,1,0.5,1,0.5,1.5,0.5]
     melodic_major_distance=[1,1,0.5,1,0.5,1,1]
 
     # Decide which form should be used
-    form_code={'1':standard_major_distance,'2':natural_minor_distance,'3':harmonic_minor_distance,'4':melodic_minor_distance,'5':harmonic_major_distance,'6':melodic_major_distance}
+    form_code={'1':natural_major_distance,'2':natural_minor_distance,'3':harmonic_minor_distance,'4':melodic_minor_distance,'5':harmonic_major_distance,'6':melodic_major_distance}
     desired_form_pattern=form_code[form]
     base_note_index=Cmaj.index(scale) 
     #Creating a draft of scale (sorted notes).
     scale_sorted_notes=Cmaj[base_note_index:].copy()
     scale_sorted_notes+=Cmaj[:base_note_index+1]
     #this loop works on finding the distance between the Note (it should be palced on the 1st location of the pattern) and the next one.
-    #it finds the "Standard" pattern of distance
+    #it finds the "Standard" distance pattern 
     #in further steps, code works on "actual" distance for desired form.
     natural_note_tuples=list(natural_pattern.keys())
     desired_scale={} # this is the answer! (wanted scale)
@@ -77,7 +82,7 @@ def scaler(scale,form):
         scale_note_tuples=list(desired_scale.keys()) # use list forms of dictionarys for making a loop on them. 
         current_tuple=scale_note_tuples[tuples_priority_index] # will be used for searching the scale distance in the dict    
         # "if" distances are equal : DO NOTHING
-        # check wheather natural distance is equal with form distance.
+        # check wheather natural distance is equal with the form distance.
         if desired_scale[current_tuple] == desired_form_pattern[tuples_priority_index]: 
             continue
         else: # have to use signatures
@@ -102,6 +107,7 @@ def scaler(scale,form):
 def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,difference): 
     scale_keys=list(scale_dict.keys())
     next_tuple=scale_keys[tuples_priority_index+1]
+    signatured_key='' #use for updating next tuple note
     updated_scale={} #the answer
     # process for '#' signature
     if signature=='#':
@@ -109,7 +115,6 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
         scale_dict[current_tuple]+=difference
         scale_dict[next_tuple]-=difference
         # second, add '#' to the note
-        alter_note=current_tuple[1] # select the 2nd note for making changes.
         difference=int(difference/0.5) #due to multiplying the number in signature sings (char type), I have to use integer.
         # this loop works on signature signs and applying them.
         for key,val in scale_dict.items(): 
@@ -121,8 +126,6 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                 # allow to insert multiple '#' if it needs! example: D#major
                 key[1]=key[1]+'#'*difference 
                 # in this stage, I wanna handle 'double diezes(##)' or 'multiple ones'
-                # I don't know if this might cause a problem but, I didn't handle '#b' or inverse! 
-                # hope to not face with that challenge :)
                 if (len(key[1])==2) and (key[1][0]=='E' or key[1][0]=='B'): #check for B# and E#
                         if key[1][0]=='B':
                             key[1]='C'
@@ -151,43 +154,12 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                     #replace new shape of note. (optimized shape)
                     key[1]=pure_note+signatures
                 #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
+                signatured_key=key[1] #storing the final shape of note for applying in the next tuple
                 key=tuple(key)
             elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
-                # transform to 'list' type for making changes.
+                # just have to replace the shape of the note which it's calculated on the previous round.
                 key=list(key)
-                # allow to insert multiple '#' if it needs! example: D#major
-                key[0]=key[0]+'#'*difference
-                # in this stage, I wanna handle 'double diezes(##)' or 'multiple ones'
-                # I don't know if this might cause a problem but, I didn't handle '#b' or inverse! 
-                # hope to not face with that challenge :)
-                if len(key[0])==2 and (key[0][0]=='E' or key[0][0]=='B'): #check for B# and E#
-                        if key[0][0]=='B':
-                            key[0]='C'
-                        else:
-                            key[0]='F'
-                # check for notes with "more" than 2 signatures. example: G##
-                if len(key[0])>2:
-                    Cmaj=['C','D','E','F','G','A','B']
-                    complex_note=key[0]
-                    pure_note=complex_note[0]
-                    pure_note_index=Cmaj.index(pure_note)
-                    signatures=complex_note[1:]
-                    # for 'E' and 'B', by one #, the note goes 1 level up.
-                    if pure_note=='E' or pure_note=='B': #removing last signature. 
-                        # replace by the higher note.
-                        signatures=signatures[:-1]
-                        if pure_note=='B':
-                            pure_note='C'
-                        else:
-                            pure_note='F'
-                    else: # for other notes, by two #, the note goes 1 level up.
-                        #removing two last signatures.
-                        signatures=signatures[:-2]
-                        # replace by the higher note.
-                        pure_note=Cmaj[pure_note_index+1]
-                    #replace new shape of note. (optimized shape)
-                    key[0]=pure_note+signatures
-                #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
+                key[0]=signatured_key
                 key=tuple(key)
             # at the end, fill the answer dict.
             updated_scale[key]=val 
@@ -198,8 +170,6 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
         scale_dict[next_tuple]+=difference #due to multiplying the number in signature sings (char type), I have to use integer.
         # this loop works on signature signs and applying them.
         difference=int(difference/0.5)
-        # second, add 'b' to the note
-        alter_note=current_tuple[1] # select the 2nd note for making changes.
         for key,val in scale_dict.items():
             # only current tuple and the next would be updated by signatures
             # reminder: the note with signature is placed in 2nd and 1st of the current tuple and the next tuple respectively.
@@ -209,8 +179,6 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                 # allow to insert multiple 'b' if it needs! example: Dbmajor
                 key[1]=key[1]+'b'*difference
                 # in this stage, I wanna handle 'double bemols(bb)' or 'multiple ones'
-                # I don't know if this might cause a problem but, I didn't handle '#b' or inverse! 
-                # hope to not face with that challenge :)
                 if len(key[1])==2: #check for Cb and Fb
                         if key[1][0]=='C':
                             key[1]='B'
@@ -239,45 +207,13 @@ def update_scale(scale_dict,current_tuple,signature,tuples_priority_index,differ
                         pure_note=Cmaj[pure_note_index-1]
                     #replace new shape of note. (optimized shape)
                     key[1]=pure_note+signatures
+                signatured_key=key[1]
                 #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
                 key=tuple(key)
             elif key==next_tuple: # check if it's turn to apply signature on the next tuple. (to update 'key')
-                # transform to 'list' type for making changes.
+                # just have to replace the shape of the note which it's calculated on the previous round.
                 key=list(key)
-                # allow to insert multiple 'b' if it needs! example: Dbmajor
-                key[0]=key[0]+'b'*difference
-                # in this stage, I wanna handle 'double diezes(##)' or 'multiple ones'
-                # I don't know if this might cause a problem but, I didn't handle '#b' or inverse! 
-                # hope to not face with that challenge :)
-                if len(key[0])==2: #check for Cb and Fb
-                        if key[0][0]=='C':
-                            key[0]='B'
-                        if key[0][0]=='F':
-                            key[0]='E'
-                # check for notes with "more" than 2 signatures. example: Gbb
-                if len(key[0])>2:
-                    Cmaj=['C','D','E','F','G','A','B']
-                    complex_note=key[0]
-                    pure_note=complex_note[0]
-                    pure_note_index=Cmaj.index(pure_note)
-                    signatures=complex_note[1:]
-                    # for 'F' and 'C', by one b, the note goes 1 level down.
-                    if pure_note=='F' or pure_note=='C':
-                        #removing last signature. 
-                        signatures=signatures[:-1]
-                        # replace by the lower note.
-                        if pure_note=='C':
-                            pure_note='B'
-                        else:
-                            pure_note='E'
-                    else:
-                        #removing 2 last signatures. 
-                        signatures=signatures[:-2]
-                        # replace by the lower note.
-                        pure_note=Cmaj[pure_note_index-1]
-                    #replace new shape of note. (optimized shape)
-                    key[0]=pure_note+signatures
-                #transform again to tuple for using in Dict (list type can't be placed as "key" in dict).
+                key[0]=signatured_key
                 key=tuple(key)
             # at the end, fill the answer dict.
             updated_scale[key]=val
@@ -512,4 +448,10 @@ def interface():
 
 interface()
 
+#optimize the code and refactor it.
+#for combined cadences, let's check the correctency of the knowledge.
+#using Figma, I have to create a draft of UI section.
+#Then, by using Kivy, create the section for PC and then, for Android.
+#There's a lot of exciting sections...
+#Hope to reach prefectly all of them.
 
