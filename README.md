@@ -13,6 +13,9 @@ The app shows each result in two ways:
 
 The visible app behavior and music logic are intentionally kept the same. The code has been separated into modules so the theory engine, UI, and launcher are easier to understand and maintain.
 
+## Application's First Page
+<img width="1920" height="1909" alt="app view" src="https://github.com/user-attachments/assets/73b28413-476d-41b8-98f1-c4214029bfb5" />
+
 ## Project Structure
 
 ```text
@@ -51,8 +54,10 @@ python Tonalyst.py
 
 The app opens as **Tonalyst** and lets you choose:
 
-- a root note, such as `C`, `F#`, or `Bb`,
+- a root note, such as `C`, `F#`, `Bb`, `A######`, or `Abbbbbb`,
 - a scale form from `1` to `6`.
+
+Root notes may be natural, or may use 1 to 6 matching accidentals. Mixed accidentals such as `A#b` are not accepted.
 
 Available scale forms:
 
@@ -106,7 +111,7 @@ The core functions live in `musician/theory.py`.
 
 Builds the requested scale.
 
-- `scale`: root note as a string, such as `C`, `F#`, or `Bb`.
+- `scale`: root note as a string, such as `C`, `F#`, `Bb`, `A######`, or `Abbbbbb`.
 - `form`: scale form code as a string from `1` to `6`.
 
 Returns:
@@ -148,7 +153,7 @@ Creates enharmonic-simplified versions of:
 - cadence chords,
 - the scale-distance dictionary.
 
-For example, the practical display may show `F` where the theoretical spelling is `E#`.
+For example, the practical display may show `F` where the theoretical spelling is `E#`, or simplify a highly altered theoretical spelling such as `A######`.
 
 ## Data Conventions
 
@@ -158,7 +163,11 @@ Notes are represented as strings:
 "C"
 "F#"
 "Bb"
+"A######"
+"Abbbbbb"
 ```
+
+Theoretical spelling preserves calculated accidentals. Practical spelling simplifies notes and chords enharmonically.
 
 Chord qualities are represented by suffixes:
 

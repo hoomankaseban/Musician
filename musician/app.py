@@ -17,7 +17,7 @@ SCALE_FORM_LABELS={
     '6':'Melodic Major',
 }
 
-ROOT_NOTE_PATTERN=re.compile(r'^[A-G](#|b)?$')
+ROOT_NOTE_PATTERN=re.compile(r'^[A-G](#{1,6}|b{1,6})?$')
 QUICK_ROOT_NOTES=['C','D','E','F','G','A','B','C#','F#','Bb','Eb','Ab']
 ENHARMONIC_ROOT_HINTS={
     'A#':'Bb',
@@ -42,7 +42,7 @@ def flet_interface(page):
     root_field=ft.TextField(
         label='Root note',
         value='C',
-        hint_text='C, F#, Bb',
+        hint_text='C, F#, Bb, A######',
         prefix_icon=ft.Icons.MUSIC_NOTE,
         border_radius=8,
         filled=True,
@@ -97,10 +97,10 @@ def flet_interface(page):
         root_field.error=None
 
         if not ROOT_NOTE_PATTERN.fullmatch(scale_name):
-            root_field.error='Use A-G with optional # or b.'
+            root_field.error='Use A-G with optional 1-6 matching # or b signs.'
             result_area.controls=[_message_panel(
                 'Invalid root note',
-                'Examples: C, F#, Bb',
+                'Examples: C, F#, Bb, A######',
                 ft.Icons.ERROR_OUTLINE,
                 '#FEF2F2',
                 '#991B1B',

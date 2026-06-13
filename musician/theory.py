@@ -3,6 +3,9 @@
 import regex as re
 
 
+ROOT_NOTE_PATTERN=re.compile(r'^[A-G](#{1,6}|b{1,6})?$')
+
+
 # This function takes a note and desired scale form then, returns its scale in the desired form.
 def scaler(scale,form):
     #scale:
@@ -10,6 +13,8 @@ def scaler(scale,form):
     #scale form:
     #'1':natural_major,'2':natural_minor_distance,'3':harmonic_minor_distance,
     #'4':melodic_minor,'5':harmonic_major_distance,'6':melodic_major_distance
+    if not ROOT_NOTE_PATTERN.fullmatch(scale):
+        raise ValueError('Use A-G with optional 1-6 matching # or b signs.')
     Cmaj=["C","D","E","F","G","A","B"] # Cmajor chord notes (using in making priorities).
     # Cmajor distances (natural distance between notes), crucial for finding distances in any scale.
     natural_pattern_prior={('C','D'):1 , ('D','E'):1 , ('E','F'):0.5 , ('F','G'):1 , ('G','A'):1 , ('A','B'):1 , ('B','C'):0.5 }
@@ -19,7 +24,10 @@ def scaler(scale,form):
     if len(scale)>1:
         #Cmaj Update
         pure_note=scale[0]
-        signature=scale[1]
+        signature=scale[1:]
+        signature_distance=0.5*len(signature)
+        if signature[0]=='b':
+            signature_distance=(-1)*signature_distance
         Cmaj[Cmaj.index(pure_note)]=scale    # a little trick :)
         # create a draft of scale distances based on standard distance pattern (Cmajor).
         # in further steps, it would be updated to the actual scale distances.
@@ -27,18 +35,12 @@ def scaler(scale,form):
             if key[0]==pure_note: # first note of tuple
                 revised_scale_tuple=(key[0]+signature,key[1]) #create right appearence for that tuple
                 # distance handling for signatures.
-                if signature=='#':
-                    revised_tuple_distance=val-0.5
-                else: # for 'b' signature...
-                    revised_tuple_distance=val+0.5
+                revised_tuple_distance=val-signature_distance
                 # fill the scale dict.
                 natural_pattern[revised_scale_tuple]=revised_tuple_distance
             elif key[1]==pure_note: # second note of tuple
                 revised_scale_tuple=(key[0],key[1]+signature) #create right appearence for that tuple
-                if signature=='#': #distance handling for diez
-                    revised_tuple_distance=val+0.5
-                else: # for 'b' signature...
-                    revised_tuple_distance=val-0.5
+                revised_tuple_distance=val+signature_distance
                 # fill the scale dict.
                 natural_pattern[revised_scale_tuple]=revised_tuple_distance
             else: #Nothings changed (exactly looks same as Cmaj distance)
@@ -206,7 +208,7 @@ def chord_quality(octave):
 # example: chord_converter('C#_dim','','b')>>> 'C_dim' .
 def chord_converter(chord,desired_form,signature):
     if desired_form!='': # if desired form is requested
-        base_chord_draft=str(re.findall('[A-Z]{1}[#,b]*',chord)[0])
+        base_chord_draft=str(re.findall(r'[A-Z][#b]*',chord)[0])
         if desired_form=='M': #for Major
             form=''
         elif desired_form=='m':#for Minor
@@ -216,27 +218,20 @@ def chord_converter(chord,desired_form,signature):
         elif desired_form=='A': #for Augmented
             form='_aug'
     else: #if there is not any desired form! (user want to convert on the same form)
-        pattern=re.compile(r'([A-Z]{1}[b*#*]?)([_]*[A-Z]*[a-z]*?)') # pattern for regex it splits on chord+signature and form.
+        pattern=re.compile(r'([A-Z][#b]*)([_]*[A-Z]*[a-z]*?)') # pattern for regex it splits on chord+signature and form.
         base_chord_draft,form=list(pattern.fullmatch(chord).groups()) #exg: C#_dim >>> 'C#','_dim' other exg: C# >>>> 'C#',''
-    # handling sugnatures
-    if signature=='': # if there is no signatures to apply on chord
-        base_chord=base_chord_draft
-    else: # if there is signatures to apply on chord
-        if len(base_chord_draft)>1: #signatured chord
-            if base_chord_draft[1]=='#': # if chord original signature is '#'
-                if signature=='b':# sharp bemol; "#b" >> move back to base
-                    base_chord=base_chord_draft[:(len(base_chord_draft)-1)]
-                else:
-                    base_chord= base_chord_draft+signature
-            else: # if chord original signature is 'b'
-                if signature=='#':  # bemol sharp; "b#" >> move on to base
-                    base_chord=base_chord_draft[:(len(base_chord_draft)-1)]
-                else:
-                    base_chord= base_chord_draft+signature
-        else: #simple chord
-            base_chord= base_chord_draft+signature
+    base_chord=apply_signature(base_chord_draft,signature)
     new_chord=base_chord+form
     return new_chord
+
+
+def apply_signature(base_note,signature):
+    for sign in signature:
+        if len(base_note)>1 and base_note[-1] in '#b' and base_note[-1]!=sign:
+            base_note=base_note[:(len(base_note)-1)]
+        else:
+            base_note=base_note+sign
+    return base_note
 
 
 #this function takes scale and form number (e.g. cadences(G,6) )
@@ -319,7 +314,7 @@ def cadences(scale,scale_form):
                         cadence_cycle.append(natural_minor_chords[int(chord_index[0])-1])
                     else: # should use chord_converter? (use in combined cadences)
                         # using regex for dicoding
-                        pattern=re.compile(r'(\d*)([b*#*]?)([A*D*M*m*]?)')
+                        pattern=re.compile(r'(\d*)([#b]*)([ADMm]?)')
                         # converting '7#A' to '7','#','A' and if one of them is null, it returns '' .
                         base_chord_index,signature,desired_form=list(pattern.fullmatch(chord_index).groups())
                         base_chord=scale_chords[int(base_chord_index)-1] # finding "base chord"
@@ -349,7 +344,7 @@ def theoretical_display(desired_scale,scale_notes,scale_name,form,scale_chords,c
 
 #this function simplifies chords and notes by enharmonics rule and is used in "simplifier"
 def enharmonics_simplifier(container):
-    pattern=re.compile(r'([A-Z]{1})([b*#*]*)(_*[a-z]*)')
+    pattern=re.compile(r'([A-Z])([#b]*)(_*[a-z]*)')
     sharp_notation=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
     flat_notation=["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
     simplified=[]
